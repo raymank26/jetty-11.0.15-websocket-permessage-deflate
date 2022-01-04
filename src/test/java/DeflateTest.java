@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DeflateTest {
 
@@ -49,7 +50,7 @@ public class DeflateTest {
         var req = new ClientUpgradeRequest();
         req.addExtensions("permessage-deflate");
         var session = client.connect(new Socket(latch), URI.create("ws://localhost:8083/ws"), req).get();
-        latch.await(3, TimeUnit.SECONDS);
+        assertTrue(latch.await(3, TimeUnit.SECONDS), "time out");
         session.close();
     }
 
