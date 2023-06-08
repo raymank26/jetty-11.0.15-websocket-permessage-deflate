@@ -28,7 +28,7 @@ public class WebSocketServlet extends JettyWebSocketServlet {
 
     @Override
     public void configure(JettyWebSocketServletFactory wsFactory) {
-//        wsFactory.setMaxTextMessageSize(1 * 1024 * 1024);
+//        wsFactory.setMaxTextMessageSize(1 * 1024 * 1024); // this value still smaller than incoming large message
         wsFactory.setCreator((req, resp) -> {
             removeAttributes(req);
             return new WebSocketListener() {

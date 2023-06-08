@@ -23,6 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * This test case sends a large portion of text data.
  * It's expected that after send a client socket is closed with error, but it seems nothing is happened.
+ * <p>
+ * Also an interesting thing that uncommenting line 31 in WebSocketServlet solves the problem
+ * (error is propagated as expected).
  *
  * <p>
  * You can start debugging by placing a breakpoint in
