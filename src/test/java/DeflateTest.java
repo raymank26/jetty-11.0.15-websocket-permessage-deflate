@@ -12,14 +12,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * This test case sends a large portion of text data.
+ * It's expected that after send a client socket is closed with error, but it seems nothing is happened.
+ *
+ * <p>
+ * You can start debugging by placing a breakpoint in
+ * org.eclipse.jetty.websocket.core.internal.messages.StringMessageSink class on line 44 (when a
+ * MessageTooLargeException is thrown).
+ */
 public class DeflateTest {
 
     Server server;
@@ -44,7 +53,7 @@ public class DeflateTest {
     @Test
     void testDeflate() throws Exception {
         var client = new WebSocketClient();
-        client.setMaxBinaryMessageSize(5 * 1024 * 1024);
+//        client.setMaxTextMessageSize(5 * 1024 * 1024);
         client.start();
         var latch = new CountDownLatch(1);
         var req = new ClientUpgradeRequest();
@@ -61,22 +70,23 @@ public class DeflateTest {
             this.latch = latch;
         }
 
-        private static byte[] largePayloads() {
+        private static String largePayloads() {
             var bytes = new byte[4 * 1024 * 1024];
             new Random(42).nextBytes(bytes);
-            return bytes;
+            return new String(bytes, StandardCharsets.UTF_8);
         }
 
         @Override
-        public void onWebSocketBinary(byte[] payload, int offset, int len) {
-            assertArrayEquals(largePayloads(), payload);
+        public void onWebSocketText(String message) {
+            String expected = largePayloads();
+            assertEquals(expected, message);
             latch.countDown();
         }
 
         @Override
         public void onWebSocketConnect(Session session) {
             session.getRemote() //
-                    .sendBytes(ByteBuffer.wrap(largePayloads()), new WriteCallback() {
+                    .sendString(largePayloads(), new WriteCallback() {
                         @Override
                         public void writeFailed(Throwable x) {
                             System.out.println("failed");
@@ -89,7 +99,15 @@ public class DeflateTest {
                     });
         }
 
+        @Override
+        public void onWebSocketClose(int statusCode, String reason) {
+            latch.countDown();
+            System.out.println("Web socket closed, reason = " + reason);
+        }
+
+        @Override
         public void onWebSocketError(Throwable cause) {
+            latch.countDown();
             cause.printStackTrace();
         }
     }

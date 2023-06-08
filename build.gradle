@@ -14,7 +14,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.0-alpha5'
 
 //    var jettyVersion = '10.0.6'
-    var jettyVersion = '10.0.7'
+    var jettyVersion = '11.0.15'
 
     implementation "org.eclipse.jetty:jetty-http:$jettyVersion"
     implementation "org.eclipse.jetty:jetty-servlet:$jettyVersion"

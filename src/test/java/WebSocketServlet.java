@@ -1,3 +1,4 @@
+import jakarta.servlet.ServletException;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
@@ -9,12 +10,11 @@ import org.eclipse.jetty.websocket.server.JettyWebSocketServerContainer;
 import org.eclipse.jetty.websocket.server.JettyWebSocketServlet;
 import org.eclipse.jetty.websocket.server.JettyWebSocketServletFactory;
 
-import javax.servlet.ServletException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
 public class WebSocketServlet extends JettyWebSocketServlet {
+
 
     @Override
     public void init() throws ServletException {
@@ -28,7 +28,7 @@ public class WebSocketServlet extends JettyWebSocketServlet {
 
     @Override
     public void configure(JettyWebSocketServletFactory wsFactory) {
-        wsFactory.setMaxBinaryMessageSize(5 * 1024 * 1024);
+//        wsFactory.setMaxTextMessageSize(1 * 1024 * 1024);
         wsFactory.setCreator((req, resp) -> {
             removeAttributes(req);
             return new WebSocketListener() {
@@ -49,7 +49,7 @@ public class WebSocketServlet extends JettyWebSocketServlet {
 
                 @Override
                 public void onWebSocketText(String message) {
-                    remote.sendBytes(ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)), new WriteCallback() {
+                    remote.sendString(message, new WriteCallback() {
                         @Override
                         public void writeFailed(Throwable x) {
                         }
@@ -73,6 +73,8 @@ public class WebSocketServlet extends JettyWebSocketServlet {
 
                 @Override
                 public void onWebSocketError(Throwable cause) {
+                    System.out.println("Server WebSocket error");
+                    cause.printStackTrace();
                 }
             };
         });
